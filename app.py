@@ -14,15 +14,50 @@ df = load_data()
 
 st.title("🎬 Movie Ratings Dashboard")
 st.markdown("""
-This dashboard provides an interactive analysis of the MovieLens 200k dataset. Use the filters in the sidebar to explore the data and answer key analytical questions about movie ratings, genres, and viewer preferences.
+This dashboard provides an interactive analysis of the movie dataset. Use the filters in the sidebar to explore the data and answer key analytical questions about movie ratings, genres, and viewer preferences.
 """)
+
 
 # Sidebar filters
 st.sidebar.header("Filters")
 unique_ages = sorted(df['age'].unique())
-age_range = st.sidebar.slider("Select Age Range", min_value=int(min(unique_ages)), max_value=int(max(unique_ages)), value=(int(min(unique_ages)), int(max(unique_ages))))
-occupations = st.sidebar.multiselect("Select Occupations", options=sorted(df['occupation'].unique()), default=list(df['occupation'].unique()))
-genders = st.sidebar.multiselect("Select Genders", options=sorted(df['gender'].unique()), default=list(df['gender'].unique()))
+default_age_range = (int(min(unique_ages)), int(max(unique_ages)))
+default_occupations = list(df['occupation'].unique())
+default_genders = list(df['gender'].unique())
+
+if 'age_range' not in st.session_state:
+    st.session_state['age_range'] = default_age_range
+if 'occupations' not in st.session_state:
+    st.session_state['occupations'] = default_occupations
+if 'genders' not in st.session_state:
+    st.session_state['genders'] = default_genders
+
+def clear_filters():
+    st.session_state['age_range'] = default_age_range
+    st.session_state['occupations'] = default_occupations
+    st.session_state['genders'] = default_genders
+
+st.sidebar.button("Clear All Filters", on_click=clear_filters)
+
+age_range = st.sidebar.slider(
+    "Select Age Range",
+    min_value=int(min(unique_ages)),
+    max_value=int(max(unique_ages)),
+    value=st.session_state['age_range'],
+    key='age_range'
+)
+occupations = st.sidebar.multiselect(
+    "Select Occupations",
+    options=sorted(df['occupation'].unique()),
+    default=st.session_state['occupations'],
+    key='occupations'
+)
+genders = st.sidebar.multiselect(
+    "Select Genders",
+    options=sorted(df['gender'].unique()),
+    default=st.session_state['genders'],
+    key='genders'
+)
 
 # Filter data
 filtered_df = df[(df['age'] >= age_range[0]) & (df['age'] <= age_range[1])]
@@ -34,9 +69,9 @@ st.dataframe(filtered_df.head(100))
 
 st.markdown("---")
 
-# Placeholder for visualizations
+# visualizations summary
 st.header("Visualizations")
-st.markdown("Below, you will find charts answering the analytical questions. Use the sidebar to filter the data.")
+st.markdown("Below, you will find charts answering the analytical questions. Use the sidebar to filter the data. Remember, a visualization is worth a thousand words!")
 
 
 # (1) Genre breakdown
@@ -80,7 +115,7 @@ ax3.set_xlabel('Release Year')
 ax3.set_ylabel('Mean Rating')
 ax3.set_title('Mean Rating by Movie Release Year (n ≥ 50)')
 st.pyplot(fig3)
-st.caption("Shows how average ratings change with movie release year. Only years with at least 50 ratings are included.")
+st.caption("How average ratings change with movie release year. Only years with at least 50 ratings are included. Note y-axis does not start at 0.")
 
 # (4) Top 5 best-rated movies (≥50 and ≥150 ratings)
 st.subheader("4. Top 5 Best-Rated Movies")
@@ -92,6 +127,6 @@ st.dataframe(top5_50)
 st.markdown("**Top 5 Movies (≥ 150 ratings):**")
 st.dataframe(top5_150)
 
-st.markdown("---")
 
-st.info("Extra credit visualizations and deeper analysis can be added below.")
+
+
